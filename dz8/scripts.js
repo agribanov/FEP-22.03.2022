@@ -98,6 +98,3 @@ function clearError() {
     errorEl.textContent = '';
     error = null;
 }
-
-// '' && null; // ''
-// '' || null; // null
