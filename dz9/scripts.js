@@ -1,27 +1,18 @@
-const TASK_ITEM_CLASS = 'task-item';
-const DELETE_BTN_CLASS = 'delete-btn';
 const TASK_DONE_CLASS = 'done';
 const HIDDEN_CLASS = 'hidden';
 const ERROR_INPUT_CLASS = 'errorInput';
-
-const TASK_ITEM_TEMPLATE =
-    document.getElementById('taskItemTemplate').innerHTML;
 
 const addBtn = document.getElementById('addBtn');
 const taskNameInput = document.getElementById('taskNameInput');
 const taskList = document.getElementById('taskList');
 const errorContainer = document.getElementById('errorContainer');
 
-document
-    .getElementById('addTaskForm')
-    .addEventListener('submit', onAddTaskFormSubmit);
-taskNameInput.addEventListener('keyup', onTaskNameInput);
-taskList.addEventListener('click', onTaskItemClick);
+addBtn.addEventListener('click', onAddBtnClick);
+taskNameInput.addEventListener('input', onTaskNameInput);
 
 addTask('Hello world!');
 
-function onAddTaskFormSubmit(e) {
-    e.preventDefault();
+function onAddBtnClick() {
     submitForm();
 }
 
@@ -29,13 +20,8 @@ function onTaskNameInput() {
     validateForm();
 }
 
-function onTaskItemClick(e) {
-    if (e.target.classList.contains(TASK_ITEM_CLASS)) {
-        toggleTaskState(e.target);
-    }
-    if (e.target.classList.contains(DELETE_BTN_CLASS)) {
-        deleteTask(e.target.closest('.' + TASK_ITEM_CLASS));
-    }
+function onTaskItemClick() {
+    console.log('clicked');
 }
 
 function submitForm() {
@@ -73,13 +59,19 @@ function clearTaskNameInput() {
 }
 
 function addTask(title) {
-    const taskItemHtml = createTaskHTML(title);
+    const el = createTaskElement(title);
 
-    taskList.insertAdjacentHTML('beforeend', taskItemHtml);
+    taskList.append(el);
 }
 
-function createTaskHTML(title) {
-    return TASK_ITEM_TEMPLATE.replace('{{title}}', title);
+function createTaskElement(title) {
+    const el = document.createElement('div');
+    el.className = 'task-item u-full-width';
+    el.textContent = title;
+
+    el.addEventListener('click', () => toggleTaskState(el));
+
+    return el;
 }
 
 function showError(msg) {
@@ -98,8 +90,4 @@ function hideError() {
 
 function toggleTaskState(el) {
     el.classList.toggle(TASK_DONE_CLASS);
-}
-
-function deleteTask(el) {
-    el.remove();
 }
