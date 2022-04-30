@@ -12,10 +12,11 @@ const taskNameInput = document.getElementById('taskNameInput');
 const taskList = document.getElementById('taskList');
 const errorContainer = document.getElementById('errorContainer');
 
+let error = false;
 document
     .getElementById('addTaskForm')
     .addEventListener('submit', onAddTaskFormSubmit);
-taskNameInput.addEventListener('keyup', onTaskNameInput);
+taskNameInput.addEventListener('input', onTaskNameInput);
 taskList.addEventListener('click', onTaskItemClick);
 
 addTask('Hello world!');
@@ -87,6 +88,7 @@ function showError(msg) {
     errorContainer.classList.remove(HIDDEN_CLASS);
     taskNameInput.classList.add(ERROR_INPUT_CLASS);
     addBtn.disabled = true;
+    error = true;
 }
 
 function hideError() {
