@@ -19,8 +19,6 @@ document
 taskNameInput.addEventListener('input', onTaskNameInput);
 taskList.addEventListener('click', onTaskItemClick);
 
-addTask('Hello world!');
-
 function onAddTaskFormSubmit(e) {
     e.preventDefault();
     submitForm();
