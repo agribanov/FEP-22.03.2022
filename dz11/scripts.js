@@ -3,6 +3,7 @@ const DELETE_BTN_CLASS = 'delete-btn';
 const TASK_DONE_CLASS = 'done';
 const HIDDEN_CLASS = 'hidden';
 const ERROR_INPUT_CLASS = 'errorInput';
+const STORAGE_KEY = 'list';
 
 const TASK_ITEM_TEMPLATE =
     document.getElementById('taskItemTemplate').innerHTML;
@@ -12,12 +13,16 @@ const taskNameInput = document.getElementById('taskNameInput');
 const taskList = document.getElementById('taskList');
 const errorContainer = document.getElementById('errorContainer');
 
-let error = false;
+let todoList = [];
+let error = null;
+
 document
     .getElementById('addTaskForm')
     .addEventListener('submit', onAddTaskFormSubmit);
 taskNameInput.addEventListener('input', onTaskNameInput);
 taskList.addEventListener('click', onTaskItemClick);
+
+init();
 
 function onAddTaskFormSubmit(e) {
     e.preventDefault();
@@ -29,30 +34,37 @@ function onTaskNameInput() {
 }
 
 function onTaskItemClick(e) {
+    const id = getTaskElementId(e.target);
+
     if (e.target.classList.contains(TASK_ITEM_CLASS)) {
-        toggleTaskState(e.target);
+        toggleTaskState(id);
     }
     if (e.target.classList.contains(DELETE_BTN_CLASS)) {
-        deleteTask(e.target.closest('.' + TASK_ITEM_CLASS));
+        deleteTask(id);
     }
 }
 
-function submitForm() {
-    const title = getTaskName();
+function init() {
+    todoList = restoreData();
+    renderList();
+}
 
-    addTask(title);
+function renderList() {
+    taskList.innerHTML = todoList.map(createTaskHTML).join('\n');
+}
+
+function submitForm() {
+    const newTask = getNewTask();
+
+    addTask(newTask);
     clearTaskNameInput();
 }
 
 function validateForm() {
     const title = getTaskName();
-    const error = validateTaskName(title);
+    error = validateTaskName(title);
 
-    if (error) {
-        showError(error);
-    } else {
-        hideError();
-    }
+    updateErrorState();
 }
 
 function validateTaskName(value) {
@@ -63,6 +75,13 @@ function validateTaskName(value) {
     return null;
 }
 
+function getNewTask() {
+    return {
+        title: getTaskName(),
+        isDone: false,
+    };
+}
+
 function getTaskName() {
     return taskNameInput.value;
 }
@@ -71,14 +90,32 @@ function clearTaskNameInput() {
     taskNameInput.value = '';
 }
 
-function addTask(title) {
-    const taskItemHtml = createTaskHTML(title);
+function addTask(newTask) {
+    newTask.id = Date.now();
 
-    taskList.insertAdjacentHTML('beforeend', taskItemHtml);
+    todoList.push(newTask);
+
+    saveData();
+    renderList();
 }
 
-function createTaskHTML(title) {
-    return TASK_ITEM_TEMPLATE.replace('{{title}}', title);
+function createTaskHTML(task) {
+    return TASK_ITEM_TEMPLATE.replace('{{id}}', task.id)
+        .replace('{{title}}', task.title)
+        .replace('{{doneClass}}', task.isDone ? TASK_DONE_CLASS : '');
+}
+
+function getTaskElementId(el) {
+    const taskElement = el.closest('.' + TASK_ITEM_CLASS);
+    return taskElement && +taskElement.dataset.id;
+}
+
+function updateErrorState() {
+    if (error) {
+        showError(error);
+    } else {
+        hideError();
+    }
 }
 
 function showError(msg) {
@@ -94,12 +131,36 @@ function hideError() {
     errorContainer.classList.add(HIDDEN_CLASS);
     taskNameInput.classList.remove(ERROR_INPUT_CLASS);
     addBtn.disabled = false;
+    error = true;
 }
 
-function toggleTaskState(el) {
-    el.classList.toggle(TASK_DONE_CLASS);
+function toggleTaskState(taskId) {
+    // const task = todoList.find((task) => task.id === taskId);
+    const task = todoList.find(({ id }) => id === taskId);
+
+    if (!task) {
+        return console.error(ERROR_MESSAGES.ID_NOT_FOUND);
+    }
+
+    task.isDone = !task.isDone;
+
+    saveData();
+    renderList();
 }
 
-function deleteTask(el) {
-    el.remove();
+function deleteTask(taskId) {
+    todoList = todoList.filter(({ id }) => id !== taskId);
+
+    saveData();
+    renderList();
+}
+
+function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todoList));
+}
+
+function restoreData() {
+    const data = localStorage.getItem(STORAGE_KEY);
+
+    return data ? JSON.parse(data) : [];
 }

@@ -21,6 +21,7 @@
                     <div class="ten columns">
                         <input
                             type="text"
+                            name="title"
                             id="taskNameInput"
                             class="u-full-width"
                         />
@@ -32,7 +33,7 @@
                 </div>
             </form>
             <script type="text/template" id="taskItemTemplate">
-                <div class="task-item u-full-width">
+                <div class="task-item u-full-width {{doneClass}}" data-id="{{id}}">
                     {{title}}
                     <span class="delete-btn">✘</span>
                 </div>
