@@ -45,8 +45,16 @@ function onTaskItemClick(e) {
 }
 
 function init() {
-    todoList = restoreData();
-    renderList();
+    // goto server
+    // todoList = restoreData();
+
+    fetch('https://jsonplaceholder.typicode.com/todos')
+        .then((res) => res.json())
+        .then((data) => {
+            todoList = data;
+            renderList()
+        })
+
 }
 
 function renderList() {
@@ -102,7 +110,7 @@ function addTask(newTask) {
 function createTaskHTML(task) {
     return TASK_ITEM_TEMPLATE.replace('{{id}}', task.id)
         .replace('{{title}}', task.title)
-        .replace('{{doneClass}}', task.isDone ? TASK_DONE_CLASS : '');
+        .replace('{{doneClass}}', task.completed ? TASK_DONE_CLASS : '');
 }
 
 function getTaskElementId(el) {
