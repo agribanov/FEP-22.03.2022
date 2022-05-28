@@ -1,190 +1,193 @@
-const API_URL = 'https://5dd3d5ba8b5e080014dc4bfa.mockapi.io/todos/';
-const TASK_ITEM_CLASS = 'task-item';
-const DELETE_BTN_CLASS = 'delete-btn';
-const TASK_DONE_CLASS = 'done';
-const HIDDEN_CLASS = 'hidden';
-const ERROR_INPUT_CLASS = 'errorInput';
-const STORAGE_KEY = 'list';
+$(() => {
+    const API_URL = 'https://5dd3d5ba8b5e080014dc4bfa.mockapi.io/todos/';
+    const TASK_ITEM_CLASS = 'task-item';
+    const DELETE_BTN_CLASS = 'delete-btn';
+    const TASK_DONE_CLASS = 'done';
+    const HIDDEN_CLASS = 'hidden';
+    const ERROR_INPUT_CLASS = 'errorInput';
+    const STORAGE_KEY = 'list';
 
-const TASK_ITEM_TEMPLATE =
-    document.getElementById('taskItemTemplate').innerHTML;
+    const TASK_ITEM_TEMPLATE = $('#taskItemTemplate').html();
 
-const addBtn = document.getElementById('addBtn');
-const taskNameInput = document.getElementById('taskNameInput');
-const taskList = document.getElementById('taskList');
-const errorContainer = document.getElementById('errorContainer');
+    const $taskNameInput = $('#taskNameInput');
+    const $taskList = $('#taskList');
+    const $errorContainer = $('#errorContainer');
 
-let todoList = [];
-let error = null;
+    let todoList = [];
+    let error = null;
 
-document
-    .getElementById('addTaskForm')
-    .addEventListener('submit', onAddTaskFormSubmit);
-taskNameInput.addEventListener('input', onTaskNameInput);
-taskList.addEventListener('click', onTaskItemClick);
+    $('#addTaskForm').on('submit', onAddTaskFormSubmit);
 
-init();
+    $taskNameInput.on('input', onTaskNameInput);
+    // $taskList.on('click', onTaskItemClick);
+    $taskList.on('click', '.' + TASK_ITEM_CLASS, onTaskItemToggle);
+    $taskList.on('click', '.' + DELETE_BTN_CLASS, onTaskItemDelete);
 
-function onAddTaskFormSubmit(e) {
-    e.preventDefault();
-    submitForm();
-}
+    init();
 
-function onTaskNameInput() {
-    validateForm();
-}
+    function onAddTaskFormSubmit(e) {
+        e.preventDefault();
+        submitForm();
+    }
 
-function onTaskItemClick(e) {
-    const id = getTaskElementId(e.target);
+    function onTaskNameInput() {
+        validateForm();
+    }
 
-    if (e.target.classList.contains(TASK_ITEM_CLASS)) {
+    function onTaskItemToggle(e) {
+        const id = getTaskElementId(e.target);
+        console.log(id);
         toggleTaskState(id);
     }
-    if (e.target.classList.contains(DELETE_BTN_CLASS)) {
+
+    function onTaskItemDelete(e) {
+        const id = getTaskElementId(e.target);
         deleteTask(id);
     }
-}
 
-function init() {
-    fetchList();
-}
+    // function onTaskItemClick(e) {
+    //     const id = getTaskElementId(e.target);
 
-function fetchList() {
-    fetch(API_URL)
-        .then((res) => res.json())
-        .then((data) => {
-            todoList = data;
-            renderList();
+    //     if (e.target.classList.contains(TASK_ITEM_CLASS)) {
+    //         toggleTaskState(id);
+    //     }
+    //     if (e.target.classList.contains(DELETE_BTN_CLASS)) {
+    //         deleteTask(id);
+    //     }
+    // }
+
+    function init() {
+        fetchList();
+    }
+
+    function fetchList() {
+        fetch(API_URL)
+            .then((res) => res.json())
+            .then((data) => {
+                todoList = data;
+                renderList();
+            });
+    }
+
+    function renderList() {
+        const html = todoList.map(createTaskHTML).join('\n');
+        $taskList.html(html);
+    }
+
+    function submitForm() {
+        const newTask = getNewTask();
+
+        addTask(newTask);
+        clearTaskNameInput();
+    }
+
+    function validateForm() {
+        const title = getTaskName();
+        error = validateTaskName(title);
+
+        updateErrorState();
+    }
+
+    function validateTaskName(value) {
+        if (value === '') return ERROR_MESSAGES.REQUIRED;
+
+        if (value.length < 3) return ERROR_MESSAGES.SHORT;
+
+        return null;
+    }
+
+    function getNewTask() {
+        return {
+            title: getTaskName(),
+            isDone: false,
+        };
+    }
+
+    function getTaskName() {
+        return $taskNameInput.val();
+    }
+
+    function clearTaskNameInput() {
+        $taskNameInput.val('');
+    }
+
+    function addTask(newTask) {
+        fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(newTask),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then((data) => {
+            fetchList();
         });
-}
-
-function renderList() {
-    taskList.innerHTML = todoList.map(createTaskHTML).join('\n');
-}
-
-function submitForm() {
-    const newTask = getNewTask();
-
-    addTask(newTask);
-    clearTaskNameInput();
-}
-
-function validateForm() {
-    const title = getTaskName();
-    error = validateTaskName(title);
-
-    updateErrorState();
-}
-
-function validateTaskName(value) {
-    if (value === '') return ERROR_MESSAGES.REQUIRED;
-
-    if (value.length < 3) return ERROR_MESSAGES.SHORT;
-
-    return null;
-}
-
-function getNewTask() {
-    return {
-        title: getTaskName(),
-        isDone: false,
-    };
-}
-
-function getTaskName() {
-    return taskNameInput.value;
-}
-
-function clearTaskNameInput() {
-    taskNameInput.value = '';
-}
-
-function addTask(newTask) {
-    fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(newTask),
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    }).then((data) => {
-        fetchList();
-    });
-}
-
-function createTaskHTML(task) {
-    return TASK_ITEM_TEMPLATE.replace('{{id}}', task.id)
-        .replace('{{title}}', task.title)
-        .replace('{{doneClass}}', task.isDone ? TASK_DONE_CLASS : '');
-}
-
-function getTaskElementId(el) {
-    const taskElement = el.closest('.' + TASK_ITEM_CLASS);
-    return taskElement && taskElement.dataset.id;
-}
-
-function updateErrorState() {
-    if (error) {
-        showError(error);
-    } else {
-        hideError();
-    }
-}
-
-function showError(msg) {
-    errorContainer.textContent = msg;
-    errorContainer.classList.remove(HIDDEN_CLASS);
-    taskNameInput.classList.add(ERROR_INPUT_CLASS);
-    addBtn.disabled = true;
-    error = true;
-}
-
-function hideError() {
-    errorContainer.textContent = '';
-    errorContainer.classList.add(HIDDEN_CLASS);
-    taskNameInput.classList.remove(ERROR_INPUT_CLASS);
-    addBtn.disabled = false;
-    error = true;
-}
-
-function toggleTaskState(taskId) {
-    // const task = todoList.find((task) => task.id === taskId);
-    const task = todoList.find(({ id }) => id === taskId);
-
-    if (!task) {
-        return console.error(ERROR_MESSAGES.ID_NOT_FOUND);
     }
 
-    task.isDone = !task.isDone;
+    function createTaskHTML(task) {
+        return TASK_ITEM_TEMPLATE.replace('{{id}}', task.id)
+            .replace('{{title}}', task.title)
+            .replace('{{doneClass}}', task.isDone ? TASK_DONE_CLASS : '');
+    }
 
-    updateTodo(task);
-}
+    function getTaskElementId(el) {
+        const $el = $(el);
 
-function updateTodo(task) {
-    fetch(API_URL + task.id, {
-        method: 'PUT',
-        body: JSON.stringify(task),
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    }).then((data) => {
-        fetchList();
-    });
-}
+        const $taskElement = $el.closest('.' + TASK_ITEM_CLASS);
+        return String($taskElement.data('id'));
+    }
 
-function deleteTask(taskId) {
-    fetch(API_URL + taskId, {
-        method: 'DELETE',
-    }).then((data) => {
-        fetchList();
-    });
-}
+    function updateErrorState() {
+        if (error) {
+            showError(error);
+        } else {
+            hideError();
+        }
+    }
 
-function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todoList));
-}
+    function showError(msg) {
+        $errorContainer.text(msg).removeClass(HIDDEN_CLASS);
+        $taskNameInput.addClass(ERROR_INPUT_CLASS);
 
-function restoreData() {
-    const data = localStorage.getItem(STORAGE_KEY);
+        error = true;
+    }
 
-    return data ? JSON.parse(data) : [];
-}
+    function hideError() {
+        $errorContainer.text('').addClass(HIDDEN_CLASS);
+        $taskNameInput.removeClass(ERROR_INPUT_CLASS);
+
+        error = true;
+    }
+
+    function toggleTaskState(taskId) {
+        // const task = todoList.find((task) => task.id === taskId);
+        const task = todoList.find(({ id }) => id === taskId);
+
+        if (!task) {
+            return console.error(ERROR_MESSAGES.ID_NOT_FOUND);
+        }
+
+        task.isDone = !task.isDone;
+
+        updateTodo(task);
+    }
+
+    function updateTodo(task) {
+        fetch(API_URL + task.id, {
+            method: 'PUT',
+            body: JSON.stringify(task),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then((data) => {
+            fetchList();
+        });
+    }
+
+    function deleteTask(taskId) {
+        fetch(API_URL + taskId, {
+            method: 'DELETE',
+        }).then((data) => {
+            fetchList();
+        });
+    }
+});
