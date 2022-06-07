@@ -20,7 +20,7 @@ class TodosCollection {
 
         todoItem.isDone = !todoItem.isDone;
 
-        fetch(TODOS_URL + todoId, {
+        return fetch(TODOS_URL + todoId, {
             method: 'PUT',
             body: JSON.stringify(todoItem),
             headers: {
@@ -32,8 +32,20 @@ class TodosCollection {
     removeTodo(todoId) {
         this.list = this.list.filter(({ id }) => id != todoId);
 
-        fetch(TODOS_URL + todoId, {
+        return fetch(TODOS_URL + todoId, {
             method: 'DELETE',
         });
+    }
+
+    createTodo(newTodo) {
+        return fetch(TODOS_URL, {
+            method: 'POST',
+            body: JSON.stringify(newTodo),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => this.list.push(data));
     }
 }

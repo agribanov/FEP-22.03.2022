@@ -1,0 +1,17 @@
+{
+    "name": "lection",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node ./"
+    },
+    "keywords": [],
+    "author": "Aleksandr Gribanov",
+    "license": "ISC",
+    "dependencies": {
+        "corejs": "^1.0.0",
+        "cowsay": "^1.5.0"
+    }
+}
