@@ -1,10 +1,8 @@
-// const calc = require('./calculator');
+const calc = require('./calculator');
 
-// console.log(calc.set(10));
-// console.log(calc.add(4));
+console.log(calc.set(10));
+console.log(calc.add(4));
 
-// const Calculator = require('./calculator/Calculator');
+const Calculator = require('./calculator/Calculator');
 
-// const calc = new Calculator();
-
-const calc = require('./calculator/calculator');
+const calc = new Calculator();
