@@ -6,7 +6,7 @@ class TodosController {
             onSave: (newTodo) => this.createTodo(newTodo),
         });
 
-        this._todosList = new TodosCollection();
+        this._todosList = new UsersCollection();
         this._todosList
             .fetchList()
             .then(() => this._view.renderList(this._todosList.list));
