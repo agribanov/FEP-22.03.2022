@@ -2,47 +2,56 @@ import './App.css';
 
 import React, { Component } from 'react';
 
+import StudentForm from './StudentForm';
+import StudentsList from './StudentsList';
+
 export default class App extends Component {
     state = {
-        name: 'Alex',
-        showName: 'true',
+        list: [
+            {
+                id: 1,
+                name: 'Alex',
+                age: 22,
+            },
+            {
+                id: 2,
+                name: 'Bob',
+                age: 22,
+            },
+            {
+                id: 3,
+                name: 'John',
+                age: 22,
+            },
+            {
+                id: 4,
+                name: 'Charly',
+                age: 22,
+            },
+        ],
     };
 
     render() {
         return (
-            <div>
-                <br />
-                <input
-                    name="name"
-                    value={this.state.name}
-                    onChange={this.onNameInputChange}
+            <>
+                <StudentsList
+                    list={this.state.list}
+                    onRemove={this.removeStudent}
                 />
-                <select>
-                    <option>+</option>
-                    <option>-</option>
-                    <option>/</option>
-                    <option>*</option>
-                </select>
-                <input
-                    name="name"
-                    value={this.state.name}
-                    onChange={this.onNameInputChange}
-                />
-                = RESULT
-            </div>
+                <StudentForm onSave={this.createStudent} />
+            </>
         );
     }
 
-    onButtonClick = () => {
+    removeStudent = (id) => {
         this.setState({
-            showName: !this.state.showName,
+            list: this.state.list.filter((student) => student.id !== id),
         });
-        console.log('aksdf', this);
     };
 
-    onNameInputChange = (e) => {
+    createStudent = (newStudent) => {
         this.setState({
-            name: e.target.value,
+            list: [...this.state.list, { ...newStudent, id: Date.now() }],
         });
     };
 }
