@@ -31,6 +31,10 @@ export default class StudentForm extends Component {
             name: this.state.name,
         };
 
+        this.setState({
+            name: '',
+        });
+
         this.props.onSave(newStudent);
     };
 }
